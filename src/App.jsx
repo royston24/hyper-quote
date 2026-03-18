@@ -373,11 +373,10 @@ export default function App() {
           marginBottom: "16px",
           maxWidth: "600px",
         }}>
-          Get an instant estimate for your project
+          GOT A PROJECT AND NEED SOME CLARITY?
         </h1>
         <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.45)", maxWidth: "500px", lineHeight: 1.7 }}>
-          Select the services you need. We'll generate a scoping estimate instantly — no forms, no waiting. 
-          A tailored proposal follows.
+          Get an instant estimate for your project. Select the services you need and we'll generate a scoping estimate instantly! No forms, no waiting.
         </p>
 
         {/* ── Mode Toggle ── */}
@@ -671,7 +670,7 @@ export default function App() {
                   Brief received.
                 </div>
                 <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", lineHeight: 1.6, fontFamily: "'Pitagon Sans Mono', monospace" }}>
-                  We'll follow up within 1 business day with a tailored proposal.
+                  Thank you! We'll follow up with you within 1-3 business day.
                 </div>
               </div>
             )}
