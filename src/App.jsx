@@ -178,9 +178,11 @@ export default function App() {
   const [gateSubmitting, setGateSubmitting] = useState(false);
   const [gateError, setGateError] = useState("");
 
-  // ── WhatsApp notification via CallMeBot ──
-  const WA_PHONE  = "6580446111";
-  const WA_APIKEY = "5561574";
+  // ── Formspree email delivery ──
+  // 👉 Replace YOUR_FORM_ID with your Formspree form ID (e.g. "xpwzgkjl")
+  // Sign up free at formspree.io → New Form → copy the ID from the endpoint URL
+  const FORMSPREE_GATE_URL    = "https://formspree.io/f/xbdzwlrz";
+  const FORMSPREE_BRIEF_URL   = "https://formspree.io/f/xbdzwlrz";
 
   const handleGateSubmit = async () => {
     if (!gateName.trim()) { setGateError("Please enter your name."); return; }
@@ -198,14 +200,20 @@ export default function App() {
       "This person just accessed the Quick Quote tool.",
     ].join("\n");
 
-    const encoded = encodeURIComponent(rawMsg);
-    const url = "https://api.callmebot.com/whatsapp.php?phone=" + WA_PHONE + "&text=" + encoded + "&apikey=" + WA_APIKEY;
-
     try {
-      await fetch(url, { method: "GET", mode: "no-cors" });
+      await fetch(FORMSPREE_GATE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          _subject: "New Lead — Hyper Creatives Quick Quote",
+          name: gateName.trim(),
+          email: gateEmail.trim(),
+          message: "This person just accessed the Quick Quote tool.",
+        }),
+      });
     } catch (err) {}
 
-    // Pre-fill the brief form with the gate info
+    // Pre-fill the brief form with gate info
     setName(gateName.trim());
     setEmail(gateEmail.trim());
     setGateUnlocked(true);
@@ -245,14 +253,21 @@ export default function App() {
       "Reply to: " + email,
     ].join("\n");
 
-    const encoded = encodeURIComponent(rawMsg);
-    const url = "https://api.callmebot.com/whatsapp.php?phone=" + WA_PHONE + "&text=" + encoded + "&apikey=" + WA_APIKEY;
-
     try {
-      await fetch(url, { method: "GET", mode: "no-cors" });
-    } catch (err) {
-      // no-cors fetch always resolves — this catch is a safeguard
-    }
+      await fetch(FORMSPREE_BRIEF_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          _subject: "New Brief — Hyper Creatives Quick Quote",
+          name,
+          email,
+          company: company || "Not provided",
+          client_type: clientType,
+          services: rawMsg,
+          estimated_total: estimate,
+        }),
+      });
+    } catch (err) {}
     setSubmitted(true);
     setSubmitting(false);
   };
@@ -376,8 +391,8 @@ export default function App() {
           {/* Body */}
           <div style={{ padding: "40px 32px", maxWidth: "980px", margin: "0 auto" }}>
             <div style={{ fontSize: "11px", color: "#C8A96E", letterSpacing: "0.12em", marginBottom: "10px" }}>BUILD YOUR BRIEF</div>
-            <div style={{ fontSize: "38px", fontWeight: 600, color: "#F5F0E8", marginBottom: "16px", maxWidth: "500px", lineHeight: 1.2 }}>GOT A PROJECT AND NEED SOME CLARITY?</div>
-            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", maxWidth: "460px", lineHeight: 1.7, marginBottom: "28px" }}>Select the services you need. We'll generate a scoping estimate instantly — no forms, no waiting. A tailored proposal follows.</div>
+            <div style={{ fontSize: "38px", fontWeight: 600, color: "#F5F0E8", marginBottom: "16px", maxWidth: "500px", lineHeight: 1.2 }}>Get an instant estimate for your project</div>
+            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", maxWidth: "460px", lineHeight: 1.7, marginBottom: "28px" }}>Select the services you need. We'll generate a scoping estimate instantly.</div>
             {/* Toggle */}
             <div style={{ display: "inline-flex", background: "rgba(255,255,255,0.05)", borderRadius: "10px", padding: "4px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "28px" }}>
               <div style={{ padding: "8px 22px", borderRadius: "7px", background: "#C8A96E", color: "#111", fontSize: "12px", fontWeight: 600 }}>Direct Client</div>
@@ -586,7 +601,7 @@ export default function App() {
           GOT A PROJECT AND NEED SOME CLARITY?
         </h1>
         <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.45)", maxWidth: "500px", lineHeight: 1.7 }}>
-         Get an instant estimate for your project. Select the services you need and we'll generate a scoping estimate instantly! No forms, no waiting.
+          Get an instant estimate for your project. Select the services you need and we'll generate a scoping estimate instantly! No forms, no waiting.
         </p>
 
         {/* ── Mode Toggle ── */}
@@ -880,7 +895,7 @@ export default function App() {
                   Brief received.
                 </div>
                 <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", lineHeight: 1.6, fontFamily: "'Pitagon Sans Mono', monospace" }}>
-                  We'll follow up within 1 business day with a tailored proposal.
+                  We'll follow up within 3 business day with a tailored proposal.
                 </div>
               </div>
             )}
