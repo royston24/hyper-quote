@@ -219,58 +219,7 @@ export default function App() {
     setGateUnlocked(true);
     setGateSubmitting(false);
   };
-
-  const handleFormSubmit = async () => {
-    if (!name || !email) return;
-    setSubmitting(true);
-    setSubmitError(false);
-
-    const clientType = mode === "agency" ? "Agency Partner" : "Direct Client";
-
-    const estimate = totalLow > 0
-      ? `SGD ${totalLow.toLocaleString()} - ${totalHigh.toLocaleString()}${hasCustom ? "+" : ""}`
-      : "Custom Quote";
-
-    const serviceLines = selectedItems.map(item =>
-      item.custom
-        ? `- ${item.name}${item.qty > 1 ? " x" + item.qty : ""}: Custom Quote`
-        : `- ${item.name}${item.qty > 1 ? " x" + item.qty : ""}: SGD ${item.low.toLocaleString()} - ${item.high.toLocaleString()}`
-    ).join("\n");
-
-    const rawMsg = [
-      "New Brief - Hyper Creatives",
-      "",
-      "Name: " + name,
-      "Email: " + email,
-      "Company: " + (company || "Not provided"),
-      "Type: " + clientType,
-      "",
-      "Selected Services:",
-      serviceLines,
-      "",
-      "Estimated Total: " + estimate,
-      "",
-      "Reply to: " + email,
-    ].join("\n");
-
-    try {
-      await fetch(FORMSPREE_BRIEF_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({
-          _subject: "New Brief — Hyper Creatives Quick Quote",
-          name,
-          email,
-          company: company || "Not provided",
-          client_type: clientType,
-          services: rawMsg,
-          estimated_total: estimate,
-        }),
-      });
-    } catch (err) {}
-    setSubmitted(true);
-    setSubmitting(false);
-  };
+;
 
   // ── Agency password gate ──
   const AGENCY_PASSWORD = "Hypercreatives2026";
@@ -332,6 +281,58 @@ export default function App() {
   const totalHigh = selectedItems.reduce((s, i) => s + (i.high || 0), 0);
   const hasCustom = selectedItems.some(i => i.custom);
   const count = Object.keys(selected).length;
+
+  const handleFormSubmit = async () => {
+    if (!name || !email) return;
+    setSubmitting(true);
+    setSubmitError(false);
+
+    const clientType = mode === "agency" ? "Agency Partner" : "Direct Client";
+
+    const estimate = totalLow > 0
+      ? `SGD ${totalLow.toLocaleString()} - ${totalHigh.toLocaleString()}${hasCustom ? "+" : ""}`
+      : "Custom Quote";
+
+    const serviceLines = selectedItems.map(item =>
+      item.custom
+        ? `- ${item.name}${item.qty > 1 ? " x" + item.qty : ""}: Custom Quote`
+        : `- ${item.name}${item.qty > 1 ? " x" + item.qty : ""}: SGD ${item.low.toLocaleString()} - ${item.high.toLocaleString()}`
+    ).join("\n");
+
+    const rawMsg = [
+      "New Brief - Hyper Creatives",
+      "",
+      "Name: " + name,
+      "Email: " + email,
+      "Company: " + (company || "Not provided"),
+      "Type: " + clientType,
+      "",
+      "Selected Services:",
+      serviceLines,
+      "",
+      "Estimated Total: " + estimate,
+      "",
+      "Reply to: " + email,
+    ].join("\n");
+
+    try {
+      await fetch(FORMSPREE_BRIEF_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          _subject: "New Brief — Hyper Creatives Quick Quote",
+          name,
+          email,
+          company: company || "Not provided",
+          client_type: clientType,
+          services: rawMsg,
+          estimated_total: estimate,
+        }),
+      });
+    } catch (err) {}
+    setSubmitted(true);
+    setSubmitting(false);
+  }
 
   const tabs = Object.entries(SERVICES);
 
