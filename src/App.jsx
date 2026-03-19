@@ -171,9 +171,46 @@ export default function App() {
   const [submitError, setSubmitError] = useState(false);
   const summaryRef = useRef(null);
 
+  // ── Lead gate ──
+  const [gateUnlocked, setGateUnlocked] = useState(false);
+  const [gateName, setGateName] = useState("");
+  const [gateEmail, setGateEmail] = useState("");
+  const [gateSubmitting, setGateSubmitting] = useState(false);
+  const [gateError, setGateError] = useState("");
+
   // ── WhatsApp notification via CallMeBot ──
   const WA_PHONE  = "6580446111";
   const WA_APIKEY = "5561574";
+
+  const handleGateSubmit = async () => {
+    if (!gateName.trim()) { setGateError("Please enter your name."); return; }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(gateEmail)) { setGateError("Please enter a valid email address."); return; }
+    setGateSubmitting(true);
+    setGateError("");
+
+    const rawMsg = [
+      "New Lead - Hyper Creatives Quick Quote",
+      "",
+      "Name: " + gateName.trim(),
+      "Email: " + gateEmail.trim(),
+      "",
+      "This person just accessed the Quick Quote tool.",
+    ].join("\n");
+
+    const encoded = encodeURIComponent(rawMsg);
+    const url = "https://api.callmebot.com/whatsapp.php?phone=" + WA_PHONE + "&text=" + encoded + "&apikey=" + WA_APIKEY;
+
+    try {
+      await fetch(url, { method: "GET", mode: "no-cors" });
+    } catch (err) {}
+
+    // Pre-fill the brief form with the gate info
+    setName(gateName.trim());
+    setEmail(gateEmail.trim());
+    setGateUnlocked(true);
+    setGateSubmitting(false);
+  };
 
   const handleFormSubmit = async () => {
     if (!name || !email) return;
@@ -283,6 +320,179 @@ export default function App() {
 
   const tabs = Object.entries(SERVICES);
 
+  if (!gateUnlocked) {
+    const previewRows = [
+      ["Brand Naming", "SGD 1,800 – 3,500"],
+      ["Brand Strategy & Positioning", "SGD 4,500 – 8,000"],
+      ["Visual Identity System", "SGD 5,000 – 10,000"],
+      ["Campaign Concept & Key Visual", "SGD 3,500 – 7,000"],
+      ["Packaging Design — Single SKU", "SGD 2,500 – 5,000"],
+      ["Monthly Retainer — Standard", "SGD 3,000 – 4,500 / mth"],
+      ["Full Brand Identity + Guidelines", "SGD 8,000 – 18,000"],
+    ];
+    return (
+      <div style={{
+        minHeight: "100vh",
+        background: "#0F0F0F",
+        fontFamily: "'Pitagon Sans Mono', monospace",
+        color: "#F5F0E8",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        <style>{`
+          @font-face {
+            font-family: 'Pitagon Sans Mono';
+            src: url('https://cdn.jsdelivr.net/gh/pitagon/pitagon-sans-mono@main/fonts/PitagonSansMono-Regular.woff2') format('woff2');
+            font-weight: 400;
+          }
+          @font-face {
+            font-family: 'Pitagon Sans Mono';
+            src: url('https://cdn.jsdelivr.net/gh/pitagon/pitagon-sans-mono@main/fonts/PitagonSansMono-Bold.woff2') format('woff2');
+            font-weight: 700;
+          }
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          .gate-input { transition: border-color 0.2s; }
+          .gate-input:focus { outline: none; border-color: #C8A96E !important; }
+          .gate-btn { transition: all 0.2s ease; }
+          .gate-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+          @keyframes gateIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+
+        {/* ── Blurred background preview ── */}
+        <div style={{
+          position: "fixed", inset: 0,
+          opacity: 0.30, filter: "blur(6px)",
+          pointerEvents: "none", userSelect: "none", overflow: "hidden",
+        }}>
+          {/* Nav */}
+          <div style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "0 32px", height: "60px", display: "flex", alignItems: "center", gap: "10px", background: "rgba(15,15,15,0.95)" }}>
+            <span style={{ fontFamily: "'Pitagon Sans Mono', monospace", fontSize: "20px", fontWeight: 700, letterSpacing: "0.06em" }}>HYPER CREATIVES</span>
+            <span style={{ width: "1px", height: "16px", background: "rgba(255,255,255,0.15)" }} />
+            <span style={{ fontSize: "11px", color: "#C8A96E", letterSpacing: "0.1em" }}>QUICK QUOTE</span>
+          </div>
+          {/* Body */}
+          <div style={{ padding: "40px 32px", maxWidth: "980px", margin: "0 auto" }}>
+            <div style={{ fontSize: "11px", color: "#C8A96E", letterSpacing: "0.12em", marginBottom: "10px" }}>BUILD YOUR BRIEF</div>
+            <div style={{ fontSize: "38px", fontWeight: 600, color: "#F5F0E8", marginBottom: "16px", maxWidth: "500px", lineHeight: 1.2 }}>GOT A PROJECT AND NEED SOME CLARITY?</div>
+            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", maxWidth: "460px", lineHeight: 1.7, marginBottom: "28px" }}>Select the services you need. We'll generate a scoping estimate instantly — no forms, no waiting. A tailored proposal follows.</div>
+            {/* Toggle */}
+            <div style={{ display: "inline-flex", background: "rgba(255,255,255,0.05)", borderRadius: "10px", padding: "4px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "28px" }}>
+              <div style={{ padding: "8px 22px", borderRadius: "7px", background: "#C8A96E", color: "#111", fontSize: "12px", fontWeight: 600 }}>Direct Client</div>
+              <div style={{ padding: "8px 22px", fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>Agency Partner 🔒</div>
+            </div>
+            {/* Tabs */}
+            <div style={{ display: "flex", gap: "6px", marginBottom: "18px" }}>
+              {["◈  Branding & Strategy", "◎  Design & Social Media", "◻  Spaces & Interiors"].map((t, i) => (
+                <div key={i} style={{ padding: "8px 16px", borderRadius: "8px", border: `1px solid ${i===0 ? "rgba(200,169,110,0.5)" : "rgba(255,255,255,0.08)"}`, background: i===0 ? "rgba(200,169,110,0.1)" : "transparent", color: i===0 ? "#C8A96E" : "rgba(255,255,255,0.4)", fontSize: "11px" }}>{t}</div>
+              ))}
+            </div>
+            {/* Two col */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "24px" }}>
+              <div>
+                {previewRows.map((row, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 16px", marginBottom: "6px", borderRadius: "10px", background: i%2===0 ? "rgba(255,255,255,0.03)" : "transparent", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    <span style={{ fontSize: "13px", color: "#F5F0E8" }}>{row[0]}</span>
+                    <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>{row[1]}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", padding: "20px" }}>
+                <div style={{ fontSize: "10px", color: "#C8A96E", letterSpacing: "0.1em", marginBottom: "6px" }}>YOUR ESTIMATE</div>
+                <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)", marginBottom: "20px" }}>No services selected yet</div>
+                <div style={{ height: "1px", background: "rgba(255,255,255,0.06)", marginBottom: "16px" }} />
+                <div style={{ fontSize: "22px", fontWeight: 600, color: "#C8A96E" }}>SGD 0</div>
+                <div style={{ marginTop: "16px", padding: "13px", borderRadius: "9px", background: "rgba(255,255,255,0.07)", textAlign: "center", fontSize: "12px", color: "rgba(255,255,255,0.2)" }}>SELECT SERVICES TO CONTINUE</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Bottom gradient fade ── */}
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: "220px", background: "linear-gradient(to top, #0F0F0F 40%, transparent)", pointerEvents: "none", zIndex: 1 }} />
+
+        {/* ── Gate card overlay ── */}
+        <div style={{ position: "fixed", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", zIndex: 10 }}>
+          <div style={{ width: "100%", maxWidth: "420px", animation: "gateIn 0.4s ease" }}>
+
+            {/* Logo */}
+            <div style={{ textAlign: "center", marginBottom: "28px" }}>
+              <img
+                src="data:image/png;base64,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"
+                alt="Hyper Creatives"
+                style={{ height: "28px", width: "auto", opacity: 0.9 }}
+              />
+            </div>
+
+            {/* Card */}
+            <div style={{ background: "rgba(20,20,20,0.97)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", padding: "32px 28px 24px", backdropFilter: "blur(20px)" }}>
+              <div style={{ width: "28px", height: "3px", background: "#C8A96E", borderRadius: "2px", marginBottom: "18px" }} />
+              <div style={{ fontSize: "18px", fontWeight: 700, color: "#F5F0E8", marginBottom: "6px", letterSpacing: "0.02em" }}>
+                Get your instant quote
+              </div>
+              <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", marginBottom: "24px", lineHeight: 1.7 }}>
+                Enter your details to access the Quick Quote tool.<br />No spam. We only reach out when it matters.
+              </div>
+
+              {/* Name field */}
+              <div style={{ marginBottom: "12px" }}>
+                <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.35)", marginBottom: "5px", letterSpacing: "0.1em" }}>YOUR NAME</div>
+                <input
+                  className="gate-input"
+                  type="text"
+                  value={gateName}
+                  onChange={e => { setGateName(e.target.value); setGateError(""); }}
+                  onKeyDown={e => e.key === "Enter" && handleGateSubmit()}
+                  placeholder="e.g. Jane Tan"
+                  style={{ width: "100%", padding: "11px 14px", borderRadius: "8px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#F5F0E8", fontSize: "13px", fontFamily: "'Pitagon Sans Mono', monospace" }}
+                />
+              </div>
+
+              {/* Email field */}
+              <div style={{ marginBottom: "8px" }}>
+                <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.35)", marginBottom: "5px", letterSpacing: "0.1em" }}>EMAIL ADDRESS</div>
+                <input
+                  className="gate-input"
+                  type="email"
+                  value={gateEmail}
+                  onChange={e => { setGateEmail(e.target.value); setGateError(""); }}
+                  onKeyDown={e => e.key === "Enter" && handleGateSubmit()}
+                  placeholder="your@email.com"
+                  style={{ width: "100%", padding: "11px 14px", borderRadius: "8px", background: "rgba(255,255,255,0.06)", border: gateError.includes("email") ? "1px solid rgba(255,90,90,0.6)" : "1px solid rgba(255,255,255,0.12)", color: "#F5F0E8", fontSize: "13px", fontFamily: "'Pitagon Sans Mono', monospace" }}
+                />
+              </div>
+
+              {/* Error */}
+              {gateError && (
+                <div style={{ fontSize: "11px", color: "rgba(255,90,90,0.8)", marginBottom: "8px" }}>{gateError}</div>
+              )}
+
+              {/* CTA */}
+              <button
+                className="gate-btn"
+                onClick={handleGateSubmit}
+                disabled={gateSubmitting}
+                style={{ width: "100%", padding: "13px", marginTop: "10px", borderRadius: "9px", border: "none", background: "#C8A96E", color: "#111111", fontSize: "12px", fontWeight: 700, letterSpacing: "0.08em", cursor: "pointer", fontFamily: "'Pitagon Sans Mono', monospace", opacity: gateSubmitting ? 0.7 : 1 }}
+              >
+                {gateSubmitting ? "LOADING..." : "ACCESS QUICK QUOTE →"}
+              </button>
+
+              <div style={{ textAlign: "center", marginTop: "14px", fontSize: "10px", color: "rgba(255,255,255,0.2)", lineHeight: 1.6 }}>
+                By continuing you agree to be contacted by Hyper Creatives.<br />Your details are never shared with third parties.
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{ textAlign: "center", marginTop: "20px", fontSize: "10px", color: "rgba(255,255,255,0.2)" }}>
+              © 2026 Hyper Creatives · Singapore · hypercreatives.agency
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div style={{
       minHeight: "100vh",
@@ -376,7 +586,7 @@ export default function App() {
           GOT A PROJECT AND NEED SOME CLARITY?
         </h1>
         <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.45)", maxWidth: "500px", lineHeight: 1.7 }}>
-          Get an instant estimate for your project. Select the services you need and we'll generate a scoping estimate instantly! No forms, no waiting.
+         Get an instant estimate for your project. Select the services you need and we'll generate a scoping estimate instantly! No forms, no waiting.
         </p>
 
         {/* ── Mode Toggle ── */}
@@ -670,7 +880,7 @@ export default function App() {
                   Brief received.
                 </div>
                 <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", lineHeight: 1.6, fontFamily: "'Pitagon Sans Mono', monospace" }}>
-                  Thank you! We'll follow up with you within 1-3 business day.
+                  We'll follow up within 1 business day with a tailored proposal.
                 </div>
               </div>
             )}
